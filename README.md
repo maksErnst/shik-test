@@ -1,6 +1,6 @@
 Установка на OpenServer
 1. **Склонировать репозиторий.**
-   https://github.com/maksErnst/shik-test
+   git clone https://github.com/maksErnst/shik-test
 2. **Установить зависимости.**
    cd your-project &&
    composer install
