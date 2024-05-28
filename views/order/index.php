@@ -5,7 +5,6 @@
 
 use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\widgets\Pjax;
 use yii\widgets\PjaxAsset;
 
 PjaxAsset::register($this);
@@ -25,7 +24,7 @@ PjaxAsset::register($this);
                     <?php endforeach; ?>
                 </ul>
             <?php endforeach; ?>
-            <?= Html::beginForm(Url::current(), 'GET', ['id' => 'filter-form', 'data-pjax' => true]); ?>
+            <?= Html::beginForm(Url::current(), 'GET', ['id' => 'filter-form']); ?>
 
             <?= Html::activeHiddenInput($searchModel, 'year'); ?>
             <?= Html::activeHiddenInput($searchModel, 'month'); ?>
@@ -33,12 +32,9 @@ PjaxAsset::register($this);
             <?= Html::endForm() ?>
         </div>
         <div class="col-md-9">
-        <?php Pjax::begin(); ?>  <!-- это для пагинации, перехват сабмита и фильтр без него отрабатывают-->
             <?= \yii\grid\GridView::widget([
-                    'dataProvider' => $dataProvider
-                ]);
-            ?>
-        <?php Pjax::end(); ?>
+                    'dataProvider' => $dataProvider,
+                ]); ?>
         </div>
     </div>
 </div>
@@ -46,6 +42,11 @@ PjaxAsset::register($this);
 
 $js = <<<JS
     const filterForm = $('#filter-form');
+    const pjaxOptions = {
+        timeout: 1000,
+        container: '#w0',
+        fragment: '#w0'
+    };
     
     $('.date-link').click(function () {
         $('#ordersearch-year').val($(this).data('year'));
@@ -55,14 +56,19 @@ $js = <<<JS
     
     filterForm.on('submit', function(e) {
         e.preventDefault();
-        $.pjax({
-            timeout: 1000,
+        $.pjax($.extend({}, pjaxOptions, {
             url: filterForm.attr('action'),
-            container: '#w0',
-            fragment: '#w0',
             data: filterForm.serialize()
-        });
+        }));
     });
+    
+    $(document).on('click', '#w0 .pagination a, #w0 th a', function (e) {
+        e.preventDefault();
+        $.pjax($.extend({}, pjaxOptions, {
+            url: $(this).attr('href')
+        }));
+    });
+
 JS;
 
 $this->registerJs($js);
