@@ -87,7 +87,7 @@ a.desc:after {
     margin-bottom: 1rem;
 }
 
-.link-filter:hover {
+.date-link:hover {
     color: #0a53be;
     cursor: pointer;
 }

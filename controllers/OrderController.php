@@ -3,21 +3,23 @@
 namespace app\controllers;
 
 use app\models\Order;
+use app\models\OrderSearch;
 use Yii;
+use yii\data\ActiveDataProvider;
 
 class OrderController extends \yii\web\Controller
 {
     public function actionIndex()
     {
-        $dataProvider = Order::search(); //в целом можно и полноценную searchModel здесь использовать, но по мне это избыточно
+        $dateList = Order::getDateList();
+        $searchModel = new OrderSearch();
+        $query = $searchModel->search(Yii::$app->request->getQueryParams());
 
-        if (Yii::$app->request->isPjax) {
-            return $this->renderAjax('_list', compact('dataProvider')); //для того, чтобы $availableMonthsYears наполнилась только раз
-        }
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
 
-        $availableMonthsYears = Order::getAvailableMonthsYears();
-
-        return $this->render('index', compact('dataProvider', 'availableMonthsYears'));
+        return $this->render('index', compact('dataProvider', 'searchModel', 'dateList'));
     }
 
 }

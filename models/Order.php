@@ -2,8 +2,6 @@
 
 namespace app\models;
 
-use Yii;
-use yii\data\ActiveDataProvider;
 use yii\db\Query;
 
 /**
@@ -46,28 +44,8 @@ class Order extends \yii\db\ActiveRecord
         ];
     }
 
-    public static function search(): ActiveDataProvider
-    {
-        $query = self::find();
-        $params = Yii::$app->request->queryParams;
 
-        if (isset($params['month']) && $params['month'] != null) {
-            $query->andWhere(['EXTRACT(MONTH FROM created_at)' => $params['month']]);
-        }
-
-        if (isset($params['year']) && $params['year'] != null) {
-            $query->andWhere(['EXTRACT(YEAR FROM created_at)' => $params['year']]);
-        }
-
-        return new ActiveDataProvider([
-            'query' => $query,
-            'pagination' => [
-                'pageSize' => 15,
-            ]
-        ]);
-    }
-
-    public static function getAvailableMonthsYears(): array
+    public static function getDateList(): array
     {
         $orders = (new Query())
             ->select([
@@ -76,17 +54,12 @@ class Order extends \yii\db\ActiveRecord
                 'COUNT(*) AS count',
             ])
             ->from('order')
-            ->groupBy([
-                'EXTRACT(YEAR FROM created_at)',
-                'EXTRACT(MONTH FROM created_at)',
-            ])
-            ->orderBy([
-                'year' => SORT_ASC,
-                'month' => SORT_ASC,
-            ])
-            ->all();    //Тут лучше билдер, чем AR, т.к. модели на выходе не нужны. В идеале закэшировать и условно по тригеру события очищать.
+            ->groupBy('year, month')
+            ->orderBy(['year' => SORT_ASC, 'month' => SORT_ASC,])
+            ->all();
 
         $result = [];
+
         foreach ($orders as $order) {
             $year = $order['year'];
             $month = $order['month'];
